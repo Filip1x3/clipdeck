@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Clipdeck
+Comment=Save game clips and record your screen
+Exec=@CLIPDECK_RUN@
+Icon=@CLIPDECK_ICON@
+Terminal=false
+Categories=AudioVideo;Video;Recorder;
+StartupNotify=true

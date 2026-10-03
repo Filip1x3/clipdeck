@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Clipdeck Capture
+Comment=Start background game capture
+Exec=@CLIPDECK_RUN@ --ensure-capture
+Terminal=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
