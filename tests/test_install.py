@@ -2,6 +2,7 @@
 
 import json
 import shlex
+import stat
 import tempfile
 from pathlib import Path
 from unittest import TestCase
@@ -11,6 +12,27 @@ import install
 
 
 class InstallerTests(TestCase):
+    def test_install_restores_web_downloaded_launcher_permissions(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "checkout"
+            fonts = root / "assets/fonts"
+            fonts.mkdir(parents=True)
+            (fonts / "Inter.ttf").write_bytes(b"font")
+            (root / "clipdeck.desktop").write_text(
+                "[Desktop Entry]\nExec=@CLIPDECK_RUN@\nIcon=@CLIPDECK_ICON@\n",
+                encoding="utf-8",
+            )
+            for name in ("install.sh", "run.sh"):
+                launcher = root / name
+                launcher.write_text("#!/bin/sh\n", encoding="utf-8")
+                launcher.chmod(0o644)
+            with (patch.object(install, "ROOT", root),
+                  patch.object(install, "DATA_HOME", Path(directory) / "data"),
+                  patch.object(install.shutil, "which", return_value=None)):
+                install.install_desktop(autostart=False)
+            for name in ("install.sh", "run.sh"):
+                self.assertTrue((root / name).stat().st_mode & stat.S_IXUSR)
+
     def test_desktop_launcher_uses_current_checkout_even_with_spaces(self):
         with patch.object(install, "ROOT", Path("/tmp/My Clipdeck")):
             entry = install.render_desktop(Path("clipdeck.desktop"))
