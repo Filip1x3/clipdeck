@@ -12,6 +12,7 @@ import json
 import os
 import shlex
 import shutil
+import stat
 import subprocess
 import sys
 from pathlib import Path
@@ -128,6 +129,11 @@ def render_desktop(template: Path) -> str:
 
 
 def install_desktop(*, autostart: bool) -> Path:
+    # Web downloads do not always retain executable file modes. Make the
+    # checkout's launchers runnable before desktop entries and keybinds use them.
+    for name in ("run.sh", "install.sh"):
+        launcher = ROOT / name
+        launcher.chmod(launcher.stat().st_mode | stat.S_IXUSR)
     applications = DATA_HOME / "applications"
     applications.mkdir(parents=True, exist_ok=True)
     target = applications / "io.github.clipdeck.Clipdeck.desktop"
@@ -178,7 +184,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--check", action="store_true", help="only check external tools")
     args = parser.parse_args(argv)
     if os.geteuid() == 0 and not args.check:
-        raise RuntimeError("Run ./install.sh as your normal user. It invokes sudo only for system packages.")
+        raise RuntimeError("Run bash ./install.sh as your normal user. It invokes sudo only for system packages.")
 
     if not args.check and not args.no_deps:
         install_dependencies()
@@ -187,7 +193,7 @@ def main(argv: list[str] | None = None) -> int:
     if missing:
         print("Missing required commands: " + ", ".join(missing), file=sys.stderr)
         print(
-            "Install them and rerun ./install.sh. GPU Screen Recorder must include gsr-cli (IPC support).",
+            "Install them and rerun bash ./install.sh. GPU Screen Recorder must include gsr-cli (IPC support).",
             file=sys.stderr,
         )
         if "gpu-screen-recorder" in missing or "gsr-cli" in missing:
@@ -195,7 +201,7 @@ def main(argv: list[str] | None = None) -> int:
                 "If your distribution lacks a compatible package, install GPU Screen "
                 "Recorder from its official source "
                 "(https://git.dec05eba.com/gpu-screen-recorder/about/) and rerun "
-                "./install.sh --no-deps. Clipdeck does not run an unpinned "
+                "bash ./install.sh --no-deps. Clipdeck does not run an unpinned "
                 "upstream build script as root.",
                 file=sys.stderr,
             )

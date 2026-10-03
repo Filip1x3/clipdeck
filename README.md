@@ -13,17 +13,17 @@ On Wayland, install the `xdg-desktop-portal` backend for your desktop if display
 Clone the repository and run the installer as your normal user:
 
 ```bash
-git clone https://github.com/Filip1x3/clipdeck.git && cd clipdeck && ./install.sh
+git clone https://github.com/Filip1x3/clipdeck.git && cd clipdeck && bash ./install.sh
 ```
 
-The installer asks for `sudo` only when it needs system packages. It checks required commands and GTK libraries, installs the application launcher, and adds background capture to login startup. On Ubuntu and Mint, if `gpu-screen-recorder` or `gsr-cli` is missing, install it from the official source and rerun `./install.sh --no-deps`. Keep the cloned directory where it is: the launcher and keybinds refer to its `run.sh` by absolute path.
+The installer asks for `sudo` only when it needs system packages. It checks required commands and GTK libraries, makes the launch scripts executable, installs the application launcher, and adds background capture to login startup. On Ubuntu and Mint, if `gpu-screen-recorder` or `gsr-cli` is missing, install it from the official source and rerun `bash ./install.sh --no-deps`. Keep the cloned directory where it is: the launcher and keybinds refer to its `run.sh` by absolute path.
 
 Installer options:
 
 ```bash
-./install.sh --check          # Check dependencies without installing anything
-./install.sh --no-autostart   # Install without capture at login
-./install.sh --no-deps        # Use dependencies already installed on the system
+bash ./install.sh --check          # Check dependencies without installing anything
+bash ./install.sh --no-autostart   # Install without capture at login
+bash ./install.sh --no-deps        # Use dependencies already installed on the system
 ```
 
 Open **Clipdeck** from your application menu after installation. You can also run `./run.sh` from the checkout.
@@ -57,8 +57,8 @@ On another desktop, set these commands as custom global shortcuts in your deskto
 | No display to capture | Select a display in **Settings → Capture**. On Wayland, try **Choose with system dialog** and check your desktop's portal backend. |
 | No desktop sound or microphone | Select the correct output and input devices in **Settings → Audio**. Use **Test microphone** before recording. |
 | No global keybind | Check your desktop's shortcut manager. Automatic registration currently covers GNOME, Cinnamon, and the supported Caelestia/Hyprland setup. |
-| Clip saving fails | Run `./install.sh --check`, then check `./run.sh --status` and the capture log at `${XDG_RUNTIME_DIR:-/tmp/clipdeck-$(id -u)}/clipdeck/recorder.log`. |
-| Launcher stops working after moving the folder | Run `./install.sh --no-deps` again from the new location. |
+| Clip saving fails | Run `bash ./install.sh --check`, then check `./run.sh --status` and the capture log at `${XDG_RUNTIME_DIR:-/tmp/clipdeck-$(id -u)}/clipdeck/recorder.log`. |
+| Launcher stops working after moving the folder | Run `bash ./install.sh --no-deps` again from the new location. |
 
 ## Privacy and dependencies
 
