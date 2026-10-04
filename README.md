@@ -97,6 +97,8 @@ To uninstall, run:
 bash ./uninstall.sh
 ```
 
+If your older Git clone does not have `uninstall.sh` yet, run `git pull --ff-only && bash ./uninstall.sh` instead. This fetches the new uninstaller and runs it; you do not need to reinstall Clipdeck first.
+
 This removes Clipdeck's user launcher, autostart, registered shortcuts, and bundled font when they still belong to this checkout. It keeps your recorded clips and `~/.config/clipdeck/settings.json`. After the command finishes, you may delete the cloned `clipdeck` directory yourself. System packages, including GPU Screen Recorder, are shared dependencies and are not removed. To install again later, clone the repository and run `bash ./install.sh` as shown above.
 
 ## Using Clipdeck
