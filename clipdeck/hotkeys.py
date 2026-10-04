@@ -116,7 +116,8 @@ def _owned_action(name: str, command: str) -> str | None:
     return None
 
 
-def _save_desktop_hotkeys(bindings: dict[str, str], desktop: str) -> None:
+def _save_desktop_hotkeys(bindings: dict[str, str], desktop: str,
+                          owner_root: Path | None = None) -> None:
     Gio = _gio()
     parent_schema, list_key, child_schema, base_path, array_binding = DESKTOP_SCHEMAS[desktop]
     source = Gio.SettingsSchemaSource.get_default()
@@ -139,7 +140,12 @@ def _save_desktop_hotkeys(bindings: dict[str, str], desktop: str) -> None:
             path = base_path + entry + "/"
         child = Gio.Settings.new_with_path(child_schema, path)
         children[entry] = child
-        action = _owned_action(child.get_string("name"), child.get_string("command"))
+        command = child.get_string("command")
+        action = _owned_action(child.get_string("name"), command)
+        if action and owner_root is not None:
+            expected = shlex.quote(str(owner_root / "run.sh")) + " " + ACTIONS[action]
+            if command != expected:
+                action = None
         if action:
             owned[action] = entry
 
