@@ -78,7 +78,7 @@ Clips default to `~/Videos`. Settings are stored in `~/.config/clipdeck/settings
 
 ## Global keybinds
 
-In **Settings → Hotkeys**, click **Set keybind** and press F1–F24, or use a key with Ctrl, Alt, or Super. Save the pending settings to apply the keybind. Clipdeck registers shortcuts automatically in GNOME and Cinnamon. It also integrates with a Caelestia/Hyprland user configuration when that configuration exists.
+In **Settings → Hotkeys**, click **Set keybind** and press F1–F24, or use a key with Ctrl, Alt, or Super. Save the pending settings to apply the keybind. Clipdeck registers shortcuts automatically in GNOME, Cinnamon, and Hyprland, including Caelestia. On a standard Hyprland setup it adds one include to `~/.config/hypr/hyprland.conf` or `hyprland.lua` and writes its bindings to a separate `clipdeck-binds` file. It backs up the original configuration before editing it.
 
 On another desktop, set these commands as custom global shortcuts in your desktop's keyboard settings:
 
@@ -93,7 +93,7 @@ On another desktop, set these commands as custom global shortcuts in your deskto
 | --- | --- |
 | No display to capture | Select a display in **Settings → Capture**. On Wayland, try **Choose with system dialog** and check your desktop's portal backend. |
 | No desktop sound or microphone | Select the correct output and input devices in **Settings → Audio**. Use **Test microphone** before recording. |
-| No global keybind | Check your desktop's shortcut manager. Automatic registration currently covers GNOME, Cinnamon, and the supported Caelestia/Hyprland setup. |
+| No global keybind | Save the keybind in Clipdeck settings, then check for conflicts in your desktop's shortcut manager. On Hyprland, run `hyprctl binds` to see active bindings. Automatic registration covers standard Hyprland, Caelestia, GNOME, and Cinnamon. |
 | Clip saving fails | Run `bash ./install.sh --check`, then check `./run.sh --status` and the capture log at `${XDG_RUNTIME_DIR:-/tmp/clipdeck-$(id -u)}/clipdeck/recorder.log`. |
 | Launcher stops working after moving the folder | Run `bash ./install.sh --no-deps` again from the new location. |
 
