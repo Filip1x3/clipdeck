@@ -62,7 +62,12 @@ class HotkeyTests(unittest.TestCase):
     def test_hyprland_session_takes_precedence_over_desktop_name(self):
         with patch.dict("os.environ", {"XDG_CURRENT_DESKTOP": "GNOME",
                                     "HYPRLAND_INSTANCE_SIGNATURE": "test-instance"}):
-            self.assertIsNone(hotkeys._desktop())
+            self.assertEqual(hotkeys._desktop(), "hyprland")
+
+    def test_mixed_hyprland_and_gnome_desktop_uses_hyprland(self):
+        with patch.dict("os.environ", {"XDG_CURRENT_DESKTOP": "Hyprland:GNOME",
+                                    "HYPRLAND_INSTANCE_SIGNATURE": ""}):
+            self.assertEqual(hotkeys._desktop(), "hyprland")
 
     def test_gnome_shortcuts_preserve_unrelated_entries_and_clear(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -133,9 +138,13 @@ class HotkeyTests(unittest.TestCase):
             user = root / "caelestia" / "hypr-user.lua"
             user.parent.mkdir()
             user.write_text("", encoding="utf-8")
+            (root / "hypr").mkdir()
+            (root / "hypr" / "hyprland.lua").write_text('require("hypr-user")\n', encoding="utf-8")
             with patch.dict("os.environ", {"XDG_CONFIG_HOME": directory,
+                                        "XDG_CURRENT_DESKTOP": "Hyprland",
                                         "HYPRLAND_INSTANCE_SIGNATURE": ""}, clear=False), \
-                 patch.object(hotkeys.subprocess, "run") as run:
+                 patch.object(hotkeys.subprocess, "run") as run, \
+                 patch.object(hotkeys.shutil, "which", return_value="/usr/bin/hyprctl"):
                 run.return_value.returncode = 0
                 hotkeys.save_hotkeys({"save": "F8"})
                 self.assertIn('hl.bind("F8"',
@@ -147,8 +156,12 @@ class HotkeyTests(unittest.TestCase):
             user = root / "caelestia" / "hypr-user.lua"
             user.parent.mkdir()
             user.write_text("-- existing user settings\n", encoding="utf-8")
-            with patch.dict("os.environ", {"XDG_CONFIG_HOME": directory, "HYPRLAND_INSTANCE_SIGNATURE": ""}, clear=False), \
-                 patch.object(hotkeys.subprocess, "run") as run:
+            (root / "hypr").mkdir()
+            (root / "hypr" / "hyprland.lua").write_text('require("hypr-user")\n', encoding="utf-8")
+            with patch.dict("os.environ", {"XDG_CONFIG_HOME": directory, "XDG_CURRENT_DESKTOP": "Hyprland",
+                                        "HYPRLAND_INSTANCE_SIGNATURE": ""}, clear=False), \
+                 patch.object(hotkeys.subprocess, "run") as run, \
+                 patch.object(hotkeys.shutil, "which", return_value="/usr/bin/hyprctl"):
                 run.return_value.returncode = 0
                 run.return_value.stderr = ""
                 hotkeys.save_hotkey("save", "CTRL + ALT + F9")
@@ -167,8 +180,12 @@ class HotkeyTests(unittest.TestCase):
             user = root / "caelestia" / "hypr-user.lua"
             user.parent.mkdir()
             user.write_text("", encoding="utf-8")
-            with patch.dict("os.environ", {"XDG_CONFIG_HOME": directory, "HYPRLAND_INSTANCE_SIGNATURE": ""}, clear=False), \
-                 patch.object(hotkeys.subprocess, "run") as run:
+            (root / "hypr").mkdir()
+            (root / "hypr" / "hyprland.lua").write_text('require("hypr-user")\n', encoding="utf-8")
+            with patch.dict("os.environ", {"XDG_CONFIG_HOME": directory, "XDG_CURRENT_DESKTOP": "Hyprland",
+                                        "HYPRLAND_INSTANCE_SIGNATURE": ""}, clear=False), \
+                 patch.object(hotkeys.subprocess, "run") as run, \
+                 patch.object(hotkeys.shutil, "which", return_value="/usr/bin/hyprctl"):
                 run.return_value.returncode = 0
                 hotkeys.save_hotkey("save", "CTRL + ALT + F9")
                 with self.assertRaises(hotkeys.HotkeyError):
@@ -180,9 +197,13 @@ class HotkeyTests(unittest.TestCase):
             user = root / "caelestia" / "hypr-user.lua"
             user.parent.mkdir()
             user.write_text("", encoding="utf-8")
+            (root / "hypr").mkdir()
+            (root / "hypr" / "hyprland.lua").write_text('require("hypr-user")\n', encoding="utf-8")
             with patch.dict("os.environ", {"XDG_CONFIG_HOME": directory,
+                                        "XDG_CURRENT_DESKTOP": "Hyprland",
                                         "HYPRLAND_INSTANCE_SIGNATURE": ""}, clear=False), \
-                 patch.object(hotkeys.subprocess, "run") as run:
+                 patch.object(hotkeys.subprocess, "run") as run, \
+                 patch.object(hotkeys.shutil, "which", return_value="/usr/bin/hyprctl"):
                 run.return_value.returncode = 0
                 hotkeys.save_hotkeys({"save": "CTRL + ALT + F9",
                                       "record": "CTRL + ALT + F10"})
@@ -192,3 +213,58 @@ class HotkeyTests(unittest.TestCase):
                     hotkeys.save_hotkeys({"save": "CTRL + ALT + F9",
                                           "record": "CTRL + ALT + F9"})
                 self.assertEqual(run.call_count, 1)
+
+    def test_plain_hyprland_conf_registers_and_clears_shortcut(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            conf = root / "hypr" / "hyprland.conf"
+            conf.parent.mkdir()
+            conf.write_text("bind = SUPER, T, exec, terminal\n", encoding="utf-8")
+            with patch.dict("os.environ", {"XDG_CONFIG_HOME": directory,
+                                        "XDG_CURRENT_DESKTOP": "Hyprland", "HYPRLAND_INSTANCE_SIGNATURE": ""}), \
+                 patch.object(hotkeys.shutil, "which", return_value="/usr/bin/hyprctl"), \
+                 patch.object(hotkeys.subprocess, "run") as run:
+                run.return_value.returncode = 0
+                hotkeys.save_hotkeys({"save": "CTRL + ALT + F8"})
+                binds = root / "hypr" / "clipdeck-binds.conf"
+                self.assertIn("bind = CTRL_ALT, F8, exec,", binds.read_text())
+                self.assertIn("source = " + str(binds), conf.read_text())
+                self.assertEqual(conf.read_text().count("# Clipdeck shortcuts"), 1)
+                hotkeys.save_hotkeys({"record": "F9"})
+                self.assertNotIn("--save-replay", binds.read_text())
+                self.assertIn("bind = , F9, exec,", binds.read_text())
+                self.assertEqual(conf.read_text().count("# Clipdeck shortcuts"), 1)
+                self.assertEqual(run.call_count, 2)
+
+    def test_plain_hyprland_lua_registers_shortcut(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            lua = root / "hypr" / "hyprland.lua"
+            lua.parent.mkdir()
+            lua.write_text('hl.bind("SUPER + T", hl.dsp.exec_cmd("terminal"))\n', encoding="utf-8")
+            with patch.dict("os.environ", {"XDG_CONFIG_HOME": directory,
+                                        "XDG_CURRENT_DESKTOP": "Hyprland", "HYPRLAND_INSTANCE_SIGNATURE": ""}), \
+                 patch.object(hotkeys.shutil, "which", return_value="/usr/bin/hyprctl"), \
+                 patch.object(hotkeys.subprocess, "run") as run:
+                run.return_value.returncode = 0
+                hotkeys.save_hotkeys({"save": "F8"})
+                self.assertIn('hl.bind("F8"', (root / "hypr" / "clipdeck-binds.lua").read_text())
+                self.assertIn('dofile(', lua.read_text())
+
+    def test_failed_hyprland_reload_restores_config_and_bindings(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            conf = root / "hypr" / "hyprland.conf"
+            conf.parent.mkdir()
+            conf.write_text("# existing settings\n", encoding="utf-8")
+            with patch.dict("os.environ", {"XDG_CONFIG_HOME": directory,
+                                        "XDG_CURRENT_DESKTOP": "Hyprland", "HYPRLAND_INSTANCE_SIGNATURE": ""}), \
+                 patch.object(hotkeys.shutil, "which", return_value="/usr/bin/hyprctl"), \
+                 patch.object(hotkeys.subprocess, "run") as run:
+                run.return_value.returncode = 1
+                run.return_value.stderr = "invalid config"
+                with self.assertRaisesRegex(hotkeys.HotkeyError, "invalid config"):
+                    hotkeys.save_hotkeys({"save": "F8"})
+                self.assertEqual(conf.read_text(), "# existing settings\n")
+                self.assertFalse((root / "hypr" / "clipdeck-binds.conf").exists())
+                self.assertFalse((root / "clipdeck" / "hotkeys.json").exists())
