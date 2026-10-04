@@ -2,6 +2,8 @@
 
 Clipdeck is a local game clipper and screen recorder for Linux. It keeps a rolling replay ready, so a keybind can save the last few seconds without opening OBS Studio. The app uses [GPU Screen Recorder](https://git.dec05eba.com/gpu-screen-recorder/about/) for capture and provides an in-app clip library, playback, and trimming.
 
+**Website:** [getclipdeck.pages.dev](https://getclipdeck.pages.dev/) — see the app and installation instructions.
+
 ## Supported systems
 
 The installer detects Arch Linux and Arch derivatives such as CachyOS, plus Ubuntu and Linux Mint. Clipdeck uses GTK 4, Libadwaita, FFmpeg, MPV, and GPU Screen Recorder. Capture also depends on your GPU, driver, desktop session, and its screen-sharing portal; installing the app alone cannot guarantee that every combination works. The current checkout has been exercised on Arch; Ubuntu and Mint installation paths are implemented but still need a real-machine check.
