@@ -8,17 +8,52 @@ Clipdeck is a local game clipper and screen recorder for Linux. It keeps a rolli
 
 The installer detects Arch Linux and Arch derivatives such as CachyOS, plus Ubuntu and Linux Mint. Clipdeck uses GTK 4, Libadwaita, FFmpeg, MPV, and GPU Screen Recorder. Capture also depends on your GPU, driver, desktop session, and its screen-sharing portal; installing the app alone cannot guarantee that every combination works. The current checkout has been exercised on Arch; Ubuntu and Mint installation paths are implemented but still need a real-machine check.
 
-On Wayland, install the `xdg-desktop-portal` backend for your desktop if display capture asks for one. On Ubuntu or Mint, install a compatible GPU Screen Recorder with `gsr-cli` from its [official source](https://git.dec05eba.com/gpu-screen-recorder/about/) before running Clipdeck. The installer installs distribution packages with `sudo` but does not run an upstream build script as root.
+On Wayland, install the `xdg-desktop-portal` backend for your desktop if display capture asks for one. On Ubuntu or Mint, follow the [GPU Screen Recorder source installation steps](#ubuntu--linux-mint-gpu-screen-recorder) before running Clipdeck. The Clipdeck installer installs distribution packages with `sudo` but does not run an upstream build script as root.
 
 ## Install
 
-Clone the repository and run the installer as your normal user:
+On Arch or CachyOS, clone the repository and run the installer as your normal user:
 
 ```bash
 git clone https://github.com/Filip1x3/clipdeck.git && cd clipdeck && bash ./install.sh
 ```
 
-The installer asks for `sudo` only when it needs system packages. It checks required commands and GTK libraries, makes the launch scripts executable, installs the application launcher, and adds background capture to login startup. On Ubuntu and Mint, if `gpu-screen-recorder` or `gsr-cli` is missing, install it from the official source and rerun `bash ./install.sh --no-deps`. Keep the cloned directory where it is: the launcher and keybinds refer to its `run.sh` by absolute path.
+### Ubuntu / Linux Mint: GPU Screen Recorder
+
+Clipdeck needs both `gpu-screen-recorder` and `gsr-cli` as system commands. The upstream project recommends [building from its official source](https://git.dec05eba.com/gpu-screen-recorder/about/) on non-Arch distributions. These package names are an example for Ubuntu 24.04 and Linux Mint 22; other releases may need different packages. This installation path has not yet been tested on a real Ubuntu or Mint machine.
+
+Install the build tools and libraries:
+
+```bash
+sudo apt update
+sudo apt install git meson ninja-build pkg-config build-essential \
+  libavcodec-dev libavformat-dev libavutil-dev libswresample-dev libavfilter-dev \
+  libx11-dev libxcomposite-dev libxrandr-dev libxfixes-dev libxdamage-dev \
+  libwayland-dev wayland-protocols libva-dev libpulse-dev libdrm-dev libcap-dev \
+  libdbus-1-dev libpipewire-0.3-dev libglvnd-dev libvulkan-dev linux-libc-dev
+```
+
+Download and install GPU Screen Recorder from its source repository:
+
+```bash
+git clone https://git.dec05eba.com/gpu-screen-recorder
+cd gpu-screen-recorder
+sudo ./install.sh
+command -v gpu-screen-recorder && command -v gsr-cli
+```
+
+Both paths must print before you continue. Then install Clipdeck as your normal user:
+
+```bash
+cd ..
+git clone https://github.com/Filip1x3/clipdeck.git
+cd clipdeck
+bash ./install.sh
+```
+
+The [Flatpak version](https://git.dec05eba.com/gpu-screen-recorder/about/) runs its CLI inside the Flatpak sandbox; installing it alone does not put the two commands in the host `PATH` expected by Clipdeck. If the source build fails, check the upstream dependency list and your GPU driver before retrying.
+
+The installer asks for `sudo` only when it needs system packages. It checks required commands and GTK libraries, makes the launch scripts executable, installs the application launcher, and adds background capture to login startup. Keep the cloned directory where it is: the launcher and keybinds refer to its `run.sh` by absolute path.
 
 Installer options:
 
