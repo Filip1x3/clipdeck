@@ -36,7 +36,7 @@ sudo apt install git meson ninja-build pkg-config build-essential \
 Download and install GPU Screen Recorder from its source repository:
 
 ```bash
-git clone https://git.dec05eba.com/gpu-screen-recorder
+git clone https://repo.dec05eba.com/gpu-screen-recorder
 cd gpu-screen-recorder
 sudo ./install.sh
 command -v gpu-screen-recorder && command -v gsr-cli
