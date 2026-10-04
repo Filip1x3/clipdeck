@@ -4,6 +4,20 @@ Clipdeck is a local game clipper and screen recorder for Linux. It keeps a rolli
 
 **Website:** [getclipdeck.pages.dev](https://getclipdeck.pages.dev/) — see the app and installation instructions.
 
+## Screenshots
+
+### Home
+
+![Clipdeck Home showing recent game clips](assets/home.webp)
+
+### Library
+
+![Clipdeck Library with searchable saved clips](assets/library.webp)
+
+### Settings
+
+![Clipdeck Settings for capture and audio](assets/settings.webp)
+
 ## Supported systems
 
 The installer detects Arch Linux and Arch derivatives such as CachyOS, plus Ubuntu and Linux Mint. Clipdeck uses GTK 4, Libadwaita, FFmpeg, MPV, and GPU Screen Recorder. Capture also depends on your GPU, driver, desktop session, and its screen-sharing portal; installing the app alone cannot guarantee that every combination works. The current checkout has been exercised on Arch; Ubuntu and Mint installation paths are implemented but still need a real-machine check.
@@ -65,6 +79,26 @@ bash ./install.sh --no-deps        # Use dependencies already installed on the s
 
 Open **Clipdeck** from your application menu after installation. You can also run `./run.sh` from the checkout.
 
+## Update or uninstall
+
+First choose **Quit** in Clipdeck (or its tray menu). Open a terminal in the same `clipdeck` directory you cloned during installation. Keep this directory in place while Clipdeck is installed because the launcher and keybinds use its absolute path.
+
+To update, run:
+
+```bash
+bash ./update.sh
+```
+
+This pulls the latest commit with `git pull --ff-only` and refreshes the launcher without reinstalling system packages. If your checkout predates `update.sh`, run `git pull --ff-only && bash ./install.sh --no-deps` once. Restart Clipdeck from the application menu afterward. If Git reports local changes or a branch conflict, resolve that first; the updater will not overwrite your edits.
+
+To uninstall, run:
+
+```bash
+bash ./uninstall.sh
+```
+
+This removes Clipdeck's user launcher, autostart, registered shortcuts, and bundled font when they still belong to this checkout. It keeps your recorded clips and `~/.config/clipdeck/settings.json`. After the command finishes, you may delete the cloned `clipdeck` directory yourself. System packages, including GPU Screen Recorder, are shared dependencies and are not removed. To install again later, clone the repository and run `bash ./install.sh` as shown above.
+
 ## Using Clipdeck
 
 - **Save a clip:** Set a keybind under **Settings → Hotkeys**, then press it while playing. Clipdeck saves the latest part of its rolling replay as an MKV file. You can choose the clip length under **Capture** and a maximum file size under **Storage**. Files larger than the limit are recompressed after capture; this may reduce visual quality, but does not shorten the clip.
@@ -113,3 +147,5 @@ python3 scripts/generate_sounds.py --check
 ```
 
 Clipdeck is a Python GTK application. `clipdeck/ui.py` contains the interface, `clipdeck/recorder.py` controls GPU Screen Recorder, `clipdeck/player.py` provides previews, and `install.py` handles system integration.
+
+The published website is at [getclipdeck.pages.dev](https://getclipdeck.pages.dev/).
